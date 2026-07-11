@@ -904,6 +904,34 @@ Return ONLY valid JSON, no markdown:
         </div>
 
         <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 18, marginBottom: 14 }}>Your Decks</h3>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => {
+            const data = localStorage.getItem("mepn-flashcards") || "{}";
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = "mepn-decks.json"; a.click();
+            URL.revokeObjectURL(url);
+          }}>⬇ export decks</button>
+          <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+            ⬆ import decks
+            <input type="file" accept=".json" style={{ display: "none" }} onChange={e => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = ev => {
+                try {
+                  const parsed = JSON.parse(ev.target.result);
+                  const merged = { ...loadDecks(), ...parsed };
+                  saveDecks(merged);
+                  setDecks(merged);
+                  alert("Decks imported successfully!");
+                } catch { alert("Invalid file. Make sure it's a mepn-decks.json file."); }
+              };
+              reader.readAsText(file);
+            }} />
+          </label>
+        </div>
         <div className="new-deck-row">
           <input className="input-field" value={newDeckName} onChange={e => setNewDeckName(e.target.value)} onKeyDown={e => e.key === "Enter" && createDeck()} placeholder="New deck name (e.g. NURS 500, Pharmacology...)" />
           <button className="btn" onClick={createDeck}>+ create</button>
